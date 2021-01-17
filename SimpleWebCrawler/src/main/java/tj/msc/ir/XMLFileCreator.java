@@ -1,7 +1,10 @@
+/**
+ * 209338R - KATS JAYATHILAKA
+ */
+
 package tj.msc.ir;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -15,7 +18,6 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 public class XMLFileCreator
 {
@@ -95,10 +97,6 @@ public class XMLFileCreator
         DOMSource domSource = new DOMSource( xml );
         StreamResult streamResult = new StreamResult( new File( xmlFilePath + System.currentTimeMillis() + ".xml" ) );
 
-        // If you use
-        // StreamResult result = new StreamResult(System.out);
-        // the output will be pushed to the standard output ...
-        // You can use that for debugging
         transformer.transform( domSource, streamResult );
     }
 }
