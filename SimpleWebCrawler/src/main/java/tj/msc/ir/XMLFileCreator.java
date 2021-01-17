@@ -20,13 +20,14 @@ import org.xml.sax.SAXException;
 public class XMLFileCreator
 {
 
-    public static final String xmlFilePath = "D:\\MSc\\Semester 3\\Information Retrieval\\SimpleWebCrawler\\infile";
+    public static final String xmlFilePath = "D:\\MSc\\Semester 3\\Information Retrieval\\A2\\CS5615-IR-A2-Minimalistic-IR-System\\SimpleWebCrawler\\infile";
 
     public static void main( String argv[] )
     {
         ArrayList<String> testDocTitles = new ArrayList();
         testDocTitles.add( "Hello" );
-        testDocTitles.add( "This" );
+        testDocTitles.add( null );
+        testDocTitles.add( "is doc" );
         testDocTitles.add( "is doc" );
         testDocTitles.add( "list" );
 
@@ -48,16 +49,19 @@ public class XMLFileCreator
                 int docNo = 0;
                 for( String docTitle : list )
                 {
-                    // elDoc element
-                    Element elDoc = xml.createElement( "DOC" );
+                    if( ( docTitle != null ) && !docTitle.equals( "" ) )
+                    {
+                        // elDoc element
+                        Element elDoc = xml.createElement( "DOC" );
 
-                    // elDocNo element
-                    Element elDocNo = xml.createElement( "DOCNO" );
-                    elDocNo.appendChild( xml.createTextNode( ( ++docNo ) + "" ) );
-                    elDoc.appendChild( elDocNo );
+                        // elDocNo element
+                        Element elDocNo = xml.createElement( "DOCNO" );
+                        elDocNo.appendChild( xml.createTextNode( ( ++docNo ) + "" ) );
+                        elDoc.appendChild( elDocNo );
 
-                    elDoc.appendChild( xml.createTextNode( docTitle ) );
-                    root.appendChild( elDoc );
+                        elDoc.appendChild( xml.createTextNode( docTitle ) );
+                        root.appendChild( elDoc );
+                    }
                 }
 
                 XMLFileCreator.saveXMLDocument( xml );
@@ -66,14 +70,6 @@ public class XMLFileCreator
             {
                 pce.printStackTrace();
             }
-            catch( IOException ioe )
-            {
-                ioe.printStackTrace();
-            }
-            catch( SAXException saxe )
-            {
-                saxe.printStackTrace();
-            }
             catch( TransformerException tfe )
             {
                 tfe.printStackTrace();
@@ -81,7 +77,7 @@ public class XMLFileCreator
         }
     }
 
-    private static Document createXMLDocument() throws ParserConfigurationException, IOException, SAXException
+    private static Document createXMLDocument() throws ParserConfigurationException
     {
         DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder();
