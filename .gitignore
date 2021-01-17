@@ -3,6 +3,7 @@
 
 #idea metadata
 .idea/
+*.iml
 
 # outputs
 target/
