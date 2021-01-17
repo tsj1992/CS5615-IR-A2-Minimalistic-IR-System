@@ -1,6 +1,13 @@
 # Compiled class file
 *.class
 
+#idea metadata
+.idea/
+
+# outputs
+target/
+SimpleWebCrawler/frontier/
+
 # Log file
 *.log
 
