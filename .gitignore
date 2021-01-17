@@ -4,6 +4,7 @@
 #idea metadata
 .idea/
 *.iml
+SimpleWebCrawler/*.iml
 
 # outputs
 target/
