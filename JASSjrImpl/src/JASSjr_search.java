@@ -171,7 +171,7 @@ class JASSjr_search
             {
                 String token = tokenizer.nextToken();
 				/*
-				  If the first token is a number then assume a TREC query number, and skip it
+				  If the first result is a number then assume a TREC query number, and skip it
 				*/
                 if (firstTerm && Character.isDigit(token.charAt(0)))
                 {

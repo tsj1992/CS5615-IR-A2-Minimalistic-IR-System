@@ -4,7 +4,9 @@
   Copyright (c) 2019 Andrew Trotman and Kat Lilly
   Minimalistic BM25 search engine.
 */
-import java.lang.Thread;
+import org.tartarus.snowball.ext.PorterStemmer;
+import sun.java2d.pipe.SpanShapeRenderer;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.nio.IntBuffer;
@@ -42,6 +44,10 @@ class JASSjr_index
 
     public class PostingsList extends ArrayList<Posting> {}
 
+    public ArrayList<String> stopwords;
+    public PorterStemmer porterStemmer = new PorterStemmer();
+    public SimpleStemmer simpleStemmer = new SimpleStemmer();
+
     String buffer;
     int current;
     String nextToken;
@@ -73,7 +79,7 @@ class JASSjr_index
             current++;
 
 		/*
-		  A token is either an XML tag '<'..'>' or a sequence of alpha-numerics.
+		  A result is either an XML tag '<'..'>' or a sequence of alpha-numerics.
 		*/
         int start = current;
         if (current >= buffer.length())
@@ -85,7 +91,7 @@ class JASSjr_index
                 for (current++; current < buffer.length() && buffer.charAt(current - 1) != '>'; current++)
                 { /* do nothing */ }
 		/*
-		  Copy and return the token
+		  Copy and return the result
 		*/
         return buffer.substring(start, current);
     }
@@ -101,6 +107,71 @@ class JASSjr_index
         current = 0;
 
         return lexGetNext();
+    }
+
+    /*
+      To load all the stop words
+    */
+    public void loadStopwords() {
+        try
+        {
+            stopwords = (ArrayList<String>) Files.readAllLines(Paths.get("english_stop_words.txt"));
+        }
+        catch( IOException e )
+        {
+            System.out.println( "Error in loading english_stop_words.txt" );
+            e.printStackTrace();
+            stopwords = new ArrayList();
+        }
+    }
+
+    /*
+      To check whether the given result is a stopword or not
+    */
+    public boolean isStopword( String token ) {
+        return stopwords.contains( token );
+    }
+
+    /*
+      Apply full porter stemmer
+    */
+    public String applyPorterStemmer( String token )
+    {
+        try
+        {
+            porterStemmer.setCurrent( token );
+            porterStemmer.stem();
+            String stemmed = porterStemmer.getCurrent();
+            return stemmed;
+        }
+        catch( Exception e )
+        {
+            System.out.println( "Error occurred during stemming" );
+            e.printStackTrace();
+        }
+
+        return token;
+    }
+
+    /*
+      Apply few rules of porter stemmer
+    */
+    public String applySimpleStemmer( String token )
+    {
+        try
+        {
+            simpleStemmer.setToken( token );
+            simpleStemmer.stem();
+            String stemmed = simpleStemmer.getResult();
+            return stemmed;
+        }
+        catch( Exception e )
+        {
+            System.out.println( "Error occurred during stemming" );
+            e.printStackTrace();
+        }
+
+        return token;
     }
 
     /*
@@ -121,6 +192,12 @@ class JASSjr_index
 //            System.out.println("Usage: java " + Thread.currentThread().getStackTrace()[1].getClassName() + " <infile.xml>");
 //            System.exit(0);
 //        }
+
+        /************************************************************************
+         * FEATURE 1 - STOPWORDS REMOVAL - Load all stopwords specified by NLTK *
+         * **********************************************************************
+         */
+        loadStopwords();
 
         String filename = "infile_mathisfun.xml";
 
@@ -150,7 +227,7 @@ class JASSjr_index
                 }
 
 					/*
-					  if the last token we saw was a <DOCNO> then the next token is the primary key
+					  if the last result we saw was a <DOCNO> then the next result is the primary key
 					*/
                 if (pushNext)
                 {
@@ -170,6 +247,22 @@ class JASSjr_index
 					  lower case the string
 					*/
                 token = token.toLowerCase();
+
+                /*********************************************************************************
+                 * FEATURE 1 - STOPWORDS REMOVAL - Skipping the iteration if result is a stopword *
+                 * *******************************************************************************
+                 */
+                if( isStopword( token ) )
+                    continue;
+
+                /**********************************************************************
+                 * FEATURE 2 - PORTER STEMMER - Applying porter stemmer to the result *
+                 *     PorterStemmer is from a Lucene-Snowball Library
+                 *     SimpleStemmer is created by me.
+                 * ********************************************************************
+                 */
+                token = applyPorterStemmer( token );
+//                token = applySimpleStemmer( token );
 
 					/*
 					  truncate any long tokens at 255 charactes (so that the length can be stored first and in a single byte)
